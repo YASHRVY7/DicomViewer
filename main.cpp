@@ -12,7 +12,10 @@ int main(int argc, char *argv[])
 
     DicomController controller;
 
-    engine.addImageProvider("dicom", controller.provider());
+    engine.addImageProvider(
+        "dicom",
+        controller.provider()
+        );
     engine.rootContext()->setContextProperty("dicomController", &controller);
 
     engine.loadFromModule("DicomViewer", "Main");
