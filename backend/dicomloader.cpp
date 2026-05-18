@@ -16,9 +16,20 @@
 
 #include <QDebug>
 
+static QString readTag(DcmDataset* dataset,
+                       const DcmTagKey& tag)
+{
+    OFString value;
+
+    if (dataset->findAndGetOFString(tag, value).good())
+        return QString::fromStdString(value.c_str());
+
+    return "Unknown";
+}
+
 namespace {
 
-QImage renderDicomToQImage(DicomImage &image)
+QImage renderDicomToQImage(DicomImage &image, double windowWidth,double windowLevel)
 {
     if (image.getStatus() != EIS_Normal)
         return {};
@@ -28,7 +39,10 @@ QImage renderDicomToQImage(DicomImage &image)
     if (w <= 0 || h <= 0)
         return {};
 
-    image.setMinMaxWindow();
+    image.setWindow(
+        windowWidth,
+        windowLevel
+    );
 
     const unsigned long outBytes = image.getOutputDataSize(8);
     if (outBytes == 0) {
@@ -122,7 +136,10 @@ DicomLoader::~DicomLoader()
 bool DicomLoader::loadFolder(const QString &folderPath)
 {
     m_images.clear();
+    m_filePaths.clear();
     m_currentIndex = 0;
+    m_imageWidth = 0;
+    m_imageHeight = 0;
 
     QFileInfo fileInfo(folderPath);
 
@@ -175,13 +192,32 @@ bool DicomLoader::loadFolder(const QString &folderPath)
 
         DcmDataset* dataset = fileFormat.getDataset();
 
-        OFString value;
+        m_patientName =
+            readTag(dataset, DCM_PatientName);
 
-        if (dataset->findAndGetOFString(DCM_PatientName, value).good())
-            m_patientName = QString::fromStdString(value.c_str());
+        m_studyDate =
+            readTag(dataset, DCM_StudyDate);
 
-        if (dataset->findAndGetOFString(DCM_StudyDate, value).good())
-            m_studyDate = QString::fromStdString(value.c_str());
+        m_patientId =
+            readTag(dataset, DCM_PatientID);
+
+        m_modality =
+            readTag(dataset, DCM_Modality);
+
+        m_studyDescription =
+            readTag(dataset, DCM_StudyDescription);
+
+        m_seriesDescription =
+            readTag(dataset, DCM_SeriesDescription);
+
+        m_institutionName =
+            readTag(dataset, DCM_InstitutionName);
+
+        m_sliceThickness =
+            readTag(dataset, DCM_SliceThickness);
+
+        m_pixelSpacing =
+            readTag(dataset, DCM_PixelSpacing);
 
         // Create DicomImage with flags to handle compressed data and missing PhotometricInterpretation
         unsigned long flags = 0;
@@ -192,13 +228,19 @@ bool DicomLoader::loadFolder(const QString &folderPath)
             continue;
         }
 
-        const QImage dicomImage = renderDicomToQImage(image);
+        const QImage dicomImage = renderDicomToQImage(image,m_windowWidth,m_windowLevel);
         if (dicomImage.isNull()) {
             qWarning() << "Failed to decode pixels for:" << file;
             continue;
         }
 
+        if (m_imageWidth == 0 && m_imageHeight == 0) {
+            m_imageWidth = dicomImage.width();
+            m_imageHeight = dicomImage.height();
+        }
+
         m_images.append(dicomImage);
+        m_filePaths.append(fullPath);
         qDebug() << "Successfully loaded DICOM file:" << file;
     }
 
@@ -209,7 +251,10 @@ bool DicomLoader::loadFolder(const QString &folderPath)
 bool DicomLoader::loadFile(const QString &filePath)
 {
     m_images.clear();
+    m_filePaths.clear();
     m_currentIndex = 0;
+    m_imageWidth = 0;
+    m_imageHeight = 0;
 
     qDebug() << "Loading DICOM file:" << filePath;
 
@@ -223,17 +268,33 @@ bool DicomLoader::loadFile(const QString &filePath)
     }
 
     DcmDataset* dataset = fileFormat.getDataset();
-    OFString value;
 
-    if (dataset->findAndGetOFString(DCM_PatientName, value).good())
-        m_patientName = QString::fromStdString(value.c_str());
-    else
-        m_patientName = "Unknown";
+    m_patientName =
+        readTag(dataset, DCM_PatientName);
 
-    if (dataset->findAndGetOFString(DCM_StudyDate, value).good())
-        m_studyDate = QString::fromStdString(value.c_str());
-    else
-        m_studyDate = "Unknown";
+    m_studyDate =
+        readTag(dataset, DCM_StudyDate);
+
+    m_patientId =
+        readTag(dataset, DCM_PatientID);
+
+    m_modality =
+        readTag(dataset, DCM_Modality);
+
+    m_studyDescription =
+        readTag(dataset, DCM_StudyDescription);
+
+    m_seriesDescription =
+        readTag(dataset, DCM_SeriesDescription);
+
+    m_institutionName =
+        readTag(dataset, DCM_InstitutionName);
+
+    m_sliceThickness =
+        readTag(dataset, DCM_SliceThickness);
+
+    m_pixelSpacing =
+        readTag(dataset, DCM_PixelSpacing);
 
     // Try to load with different flags to handle compressed data
     DicomImage *image = nullptr;
@@ -256,7 +317,7 @@ bool DicomLoader::loadFile(const QString &filePath)
         }
     }
 
-    const QImage dicomImage = renderDicomToQImage(*image);
+    const QImage dicomImage = renderDicomToQImage(*image,m_windowWidth,m_windowLevel);
     delete image;
 
     if (dicomImage.isNull()) {
@@ -264,12 +325,109 @@ bool DicomLoader::loadFile(const QString &filePath)
         return false;
     }
 
+    m_imageWidth = dicomImage.width();
+    m_imageHeight = dicomImage.height();
+
     m_image = dicomImage;
     m_images.append(dicomImage);
+    m_filePaths.append(filePath);
 
     qDebug() << "Successfully loaded DICOM file:" << filePath;
     return true;
 }
+
+
+// void DicomLoader::rerenderCurrentImage()
+// {
+//     if (m_filePaths.isEmpty())
+//         return;
+
+//     if (m_currentIndex < 0 ||
+//         m_currentIndex >= m_filePaths.size())
+//         return;
+
+//     QString filePath =
+//         m_filePaths[m_currentIndex];
+
+//     DicomImage image(
+//         filePath.toStdString().c_str()
+//         );
+
+//     if (image.getStatus() != EIS_Normal) {
+
+//         unsigned long flags = 0;
+
+//         DicomImage imageWithFlags(
+//             filePath.toStdString().c_str(),
+//             flags
+//             );
+
+//         if (imageWithFlags.getStatus() != EIS_Normal)
+//             return;
+
+//         QImage newImage =
+//             renderDicomToQImage(
+//                 imageWithFlags,
+//                 m_windowWidth,
+//                 m_windowLevel
+//                 );
+
+//         if (!newImage.isNull()) {
+//             m_images[m_currentIndex] = newImage;
+//             m_image = newImage;
+//         }
+
+//         return;
+//     }
+
+//     QImage newImage =
+//         renderDicomToQImage(
+//             image,
+//             m_windowWidth,
+//             m_windowLevel
+//             );
+
+//     if (!newImage.isNull()) {
+//         m_images[m_currentIndex] = newImage;
+//         m_image = newImage;
+//     }
+// }
+void DicomLoader::rerenderAllImages()
+{
+    if (m_filePaths.isEmpty())
+        return;
+
+    for (int i = 0; i < m_filePaths.size(); i++) {
+
+        QString filePath =
+            m_filePaths[i];
+
+        DicomImage image(
+            filePath.toStdString().c_str()
+            );
+
+        if (image.getStatus() != EIS_Normal)
+            continue;
+
+        QImage newImage =
+            renderDicomToQImage(
+                image,
+                m_windowWidth,
+                m_windowLevel
+                );
+
+        if (!newImage.isNull())
+            m_images[i] = newImage;
+    }
+
+    if (m_currentIndex >= 0 &&
+        m_currentIndex < m_images.size()) {
+
+        m_image =
+            m_images[m_currentIndex];
+    }
+}
+
 QImage DicomLoader::currentImage() const
 {
     if (m_images.isEmpty())
@@ -321,4 +479,68 @@ int DicomLoader::currentIndex() const
 int DicomLoader::totalSlices() const
 {
     return m_images.size();
+}
+void DicomLoader::setWindowWidth(double width)
+{
+    m_windowWidth = width;
+}
+
+void DicomLoader::setWindowLevel(double level)
+{
+    m_windowLevel = level;
+}
+
+double DicomLoader::windowWidth() const
+{
+    return m_windowWidth;
+}
+
+double DicomLoader::windowLevel() const
+{
+    return m_windowLevel;
+}
+
+QString DicomLoader::patientId() const
+{
+    return m_patientId;
+}
+
+QString DicomLoader::modality() const
+{
+    return m_modality;
+}
+
+QString DicomLoader::studyDescription() const
+{
+    return m_studyDescription;
+}
+
+QString DicomLoader::seriesDescription() const
+{
+    return m_seriesDescription;
+}
+
+QString DicomLoader::institutionName() const
+{
+    return m_institutionName;
+}
+
+QString DicomLoader::sliceThickness() const
+{
+    return m_sliceThickness;
+}
+
+QString DicomLoader::pixelSpacing() const
+{
+    return m_pixelSpacing;
+}
+
+int DicomLoader::imageWidth() const
+{
+    return m_imageWidth;
+}
+
+int DicomLoader::imageHeight() const
+{
+    return m_imageHeight;
 }

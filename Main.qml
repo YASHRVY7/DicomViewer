@@ -156,8 +156,115 @@ Window {
 
                             zoomLevel = 1.0
 
-                            imageContainer.x = 0
-                            imageContainer.y = 0
+                            imageContainer.x =
+                                    (viewerArea.width -
+                                     imageContainer.width) / 2
+
+                            imageContainer.y =
+                                    (viewerArea.height -
+                                     imageContainer.height) / 2
+                        }
+                    }
+
+                    Button {
+
+                        text: "BONE"
+
+                        implicitWidth: 90
+                        implicitHeight: 38
+
+                        font.pixelSize: 12
+                        font.bold: true
+
+                        background: Rectangle {
+
+                            radius: 4
+                            color: parent.down ? "#243244" : "#1a2430"
+                            border.color: "#2c3c50"
+                        }
+
+                        contentItem: Text {
+
+                            text: parent.text
+                            color: "#d8dee9"
+                            font.pixelSize: 12
+                            font.bold: true
+                            horizontalAlignment: Text.AlignHCenter
+                            verticalAlignment: Text.AlignVCenter
+                        }
+
+                        onClicked: {
+
+                            dicomController.setWindowWidth(1500)
+                            dicomController.setWindowLevel(300)
+                        }
+                    }
+
+                    Button {
+
+                        text: "LUNG"
+
+                        implicitWidth: 90
+                        implicitHeight: 38
+
+                        font.pixelSize: 12
+                        font.bold: true
+
+                        background: Rectangle {
+
+                            radius: 4
+                            color: parent.down ? "#243244" : "#1a2430"
+                            border.color: "#2c3c50"
+                        }
+
+                        contentItem: Text {
+
+                            text: parent.text
+                            color: "#d8dee9"
+                            font.pixelSize: 12
+                            font.bold: true
+                            horizontalAlignment: Text.AlignHCenter
+                            verticalAlignment: Text.AlignVCenter
+                        }
+
+                        onClicked: {
+
+                            dicomController.setWindowWidth(1500)
+                            dicomController.setWindowLevel(-600)
+                        }
+                    }
+
+                    Button {
+
+                        text: "BRAIN"
+
+                        implicitWidth: 90
+                        implicitHeight: 38
+
+                        font.pixelSize: 12
+                        font.bold: true
+
+                        background: Rectangle {
+
+                            radius: 4
+                            color: parent.down ? "#243244" : "#1a2430"
+                            border.color: "#2c3c50"
+                        }
+
+                        contentItem: Text {
+
+                            text: parent.text
+                            color: "#d8dee9"
+                            font.pixelSize: 12
+                            font.bold: true
+                            horizontalAlignment: Text.AlignHCenter
+                            verticalAlignment: Text.AlignVCenter
+                        }
+
+                        onClicked: {
+
+                            dicomController.setWindowWidth(80)
+                            dicomController.setWindowLevel(40)
                         }
                     }
 
@@ -224,7 +331,7 @@ Window {
 
                 Rectangle {
 
-                    Layout.preferredWidth: 280
+                    Layout.preferredWidth: 300
                     Layout.fillHeight: true
 
                     color: "#101720"
@@ -232,11 +339,27 @@ Window {
                     border.color: "#1f2b38"
                     border.width: 1
 
-                    Column {
+                    Flickable {
 
                         anchors.fill: parent
                         anchors.margins: 18
-                        spacing: 20
+
+                        contentWidth: width
+                        contentHeight: panelColumn.height
+
+                        clip: true
+                        boundsBehavior: Flickable.StopAtBounds
+
+                        ScrollBar.vertical: ScrollBar {
+                            policy: ScrollBar.AsNeeded
+                        }
+
+                        Column {
+
+                            id: panelColumn
+
+                            width: parent.width
+                            spacing: 18
 
                         Label {
 
@@ -258,7 +381,7 @@ Window {
 
                         Column {
 
-                            spacing: 18
+                            spacing: 16
 
                             Column {
 
@@ -315,6 +438,160 @@ Window {
                                 spacing: 6
 
                                 Label {
+                                    text: "Patient ID"
+                                    color: "#7f92a8"
+                                    font.pixelSize: 12
+                                }
+
+                                Label {
+                                    text: dicomController.patientId
+                                    color: "#f1f5f9"
+                                    font.pixelSize: 15
+                                    font.bold: true
+                                }
+                            }
+
+                            Column {
+
+                                spacing: 6
+
+                                Label {
+                                    text: "Modality"
+                                    color: "#7f92a8"
+                                    font.pixelSize: 12
+                                }
+
+                                Label {
+                                    text: dicomController.modality
+                                    color: "#f1f5f9"
+                                    font.pixelSize: 15
+                                    font.bold: true
+                                }
+                            }
+
+                            Column {
+
+                                spacing: 6
+
+                                Label {
+                                    text: "Study Description"
+                                    color: "#7f92a8"
+                                    font.pixelSize: 12
+                                }
+
+                                Label {
+                                    text: dicomController.studyDescription
+                                    color: "#f1f5f9"
+                                    font.pixelSize: 14
+                                    font.bold: true
+                                    wrapMode: Text.WordWrap
+                                    width: 240
+                                }
+                            }
+
+                            Column {
+
+                                spacing: 6
+
+                                Label {
+                                    text: "Series Description"
+                                    color: "#7f92a8"
+                                    font.pixelSize: 12
+                                }
+
+                                Label {
+                                    text: dicomController.seriesDescription
+                                    color: "#f1f5f9"
+                                    font.pixelSize: 14
+                                    font.bold: true
+                                    wrapMode: Text.WordWrap
+                                    width: 240
+                                }
+                            }
+
+                            Column {
+
+                                spacing: 6
+
+                                Label {
+                                    text: "Institution"
+                                    color: "#7f92a8"
+                                    font.pixelSize: 12
+                                }
+
+                                Label {
+                                    text: dicomController.institutionName
+                                    color: "#f1f5f9"
+                                    font.pixelSize: 14
+                                    font.bold: true
+                                    wrapMode: Text.WordWrap
+                                    width: 240
+                                }
+                            }
+
+                            Column {
+
+                                spacing: 6
+
+                                Label {
+                                    text: "Slice Thickness"
+                                    color: "#7f92a8"
+                                    font.pixelSize: 12
+                                }
+
+                                Label {
+                                    text: dicomController.sliceThickness
+                                    color: "#f1f5f9"
+                                    font.pixelSize: 15
+                                    font.bold: true
+                                }
+                            }
+
+                            Column {
+
+                                spacing: 6
+
+                                Label {
+                                    text: "Pixel Spacing"
+                                    color: "#7f92a8"
+                                    font.pixelSize: 12
+                                }
+
+                                Label {
+                                    text: dicomController.pixelSpacing
+                                    color: "#f1f5f9"
+                                    font.pixelSize: 15
+                                    font.bold: true
+                                }
+                            }
+
+                            Column {
+
+                                spacing: 6
+
+                                Label {
+                                    text: "Image Size"
+                                    color: "#7f92a8"
+                                    font.pixelSize: 12
+                                }
+
+                                Label {
+                                    text:
+                                        dicomController.imageWidth +
+                                        " x " +
+                                        dicomController.imageHeight
+
+                                    color: "#f1f5f9"
+                                    font.pixelSize: 15
+                                    font.bold: true
+                                }
+                            }
+
+                            Column {
+
+                                spacing: 6
+
+                                Label {
 
                                     text: "Zoom Level"
 
@@ -334,6 +611,142 @@ Window {
 
                                     font.pixelSize: 15
                                     font.bold: true
+                                }
+                            }
+
+                            Column {
+
+                                spacing: 6
+
+                                Label {
+
+                                    text: "Window Width"
+
+                                    color: "#7f92a8"
+
+                                    font.pixelSize: 12
+                                }
+
+                                Label {
+
+                                    text:
+                                        Math.round(
+                                            dicomController.windowWidth
+                                            )
+
+                                    color: "#f1f5f9"
+
+                                    font.pixelSize: 15
+                                    font.bold: true
+                                }
+                            }
+
+                            Column {
+
+                                spacing: 6
+
+                                Label {
+
+                                    text: "Window Level"
+
+                                    color: "#7f92a8"
+
+                                    font.pixelSize: 12
+                                }
+
+                                Label {
+
+                                    text:
+                                        Math.round(
+                                            dicomController.windowLevel
+                                            )
+
+                                    color: "#f1f5f9"
+
+                                    font.pixelSize: 15
+                                    font.bold: true
+                                }
+                            }
+                        }
+
+                        Rectangle {
+
+                            width: parent.width
+                            height: 1
+
+                            color: "#263241"
+                        }
+
+                        Label {
+
+                            text: "WINDOW CONTROLS"
+
+                            color: "#f1f5f9"
+
+                            font.pixelSize: 15
+                            font.bold: true
+                        }
+
+                        Column {
+
+                            width: parent.width
+                            spacing: 10
+
+                            Label {
+
+                                text: "Width / Contrast"
+
+                                color: "#8ea1b5"
+
+                                font.pixelSize: 12
+                            }
+
+                            Slider {
+
+                                width: parent.width
+
+                                from: 1
+                                to: 3000
+
+                                value:
+                                    dicomController.windowWidth
+
+                                enabled:
+                                    dicomController.imageLoaded
+
+                                onMoved: {
+
+                                    dicomController
+                                    .setWindowWidth(value)
+                                }
+                            }
+
+                            Label {
+
+                                text: "Level / Brightness"
+
+                                color: "#8ea1b5"
+
+                                font.pixelSize: 12
+                            }
+
+                            Slider {
+
+                                width: parent.width
+
+                                from: -1000
+                                to: 1000
+
+                                value:
+                                    dicomController.windowLevel
+
+                                enabled:
+                                    dicomController.imageLoaded
+
+                                onMoved: {
+
+                                    dicomController
+                                    .setWindowLevel(value)
                                 }
                             }
                         }
@@ -400,6 +813,7 @@ Window {
                             }
                         }
                     }
+                    }
                 }
 
                 // =====================================
@@ -407,6 +821,8 @@ Window {
                 // =====================================
 
                 Rectangle {
+
+                    id: viewerArea
 
                     Layout.fillWidth: true
                     Layout.fillHeight: true
@@ -463,7 +879,7 @@ Window {
 
                         anchors.topMargin: 14
 
-                        width: 240
+                        width: 380
                         height: 40
 
                         radius: 4
@@ -477,7 +893,7 @@ Window {
                         Row {
 
                             anchors.centerIn: parent
-                            spacing: 20
+                            spacing: 18
 
                             Label {
 
@@ -498,6 +914,20 @@ Window {
                                 text:
                                     "Slice: " +
                                     dicomController.currentSlice
+
+                                color: "#dbe4ee"
+
+                                font.pixelSize: 13
+                                font.bold: true
+                            }
+
+                            Label {
+
+                                text:
+                                    "WW/WL: " +
+                                    Math.round(dicomController.windowWidth) +
+                                    " / " +
+                                    Math.round(dicomController.windowLevel)
 
                                 color: "#dbe4ee"
 
@@ -658,7 +1088,10 @@ Window {
 
                     Label {
 
-                        text: "Ready"
+                        text:
+                            dicomController.imageLoaded
+                            ? "Study Ready"
+                            : "Ready"
 
                         color: "#22c55e"
 
