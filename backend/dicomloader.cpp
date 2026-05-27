@@ -11,10 +11,68 @@
 #include <QDir>
 #include <QFileInfo>
 #include <QByteArray>
+#include <QFileInfoList>
+#include <algorithm>
 
 #include <cstring>
 
 #include <QDebug>
+
+struct DicomSliceInfo
+{
+    QString filePath;
+    int instanceNumber = 0;
+    double sliceLocation = 0.0;
+};
+
+
+static DicomSliceInfo readSliceInfo(const QString& filePath)
+{
+
+    DicomSliceInfo info;
+    info.filePath = filePath;
+
+    DcmFileFormat  fileFormat;
+
+
+    OFCondition status =
+        fileFormat.loadFile(filePath.toStdString().c_str());
+
+    if (status.bad())
+        return info;
+
+
+    DcmDataset* dataset =
+        fileFormat.getDataset();
+
+    Sint32 instanceNumber = 0;
+
+    if(dataset->findAndGetSint32(
+        DCM_InstanceNumber,
+        instanceNumber
+    ).good()){
+
+        info.instanceNumber =
+            static_cast<int>(instanceNumber);
+    }
+
+    OFString sliceLocation;
+    if (dataset->findAndGetOFString(
+                   DCM_SliceLocation,
+                   sliceLocation
+                   ).good()) {
+
+        info.sliceLocation =
+            QString::fromStdString(
+                sliceLocation.c_str()
+                ).toDouble();
+    }
+
+    return info;
+
+
+}
+
 
 static QString readTag(DcmDataset* dataset,
                        const DcmTagKey& tag)
@@ -173,24 +231,77 @@ bool DicomLoader::loadFolder(const QString &folderPath)
         return false;
     }
 
+    // =========================================================
+    // READ SLICE INFO
+    // =========================================================
+
+    QList<DicomSliceInfo> slices;
+
     for (const QString& file : files) {
 
-        QString fullPath = folder.absoluteFilePath(file);
+        QString fullPath =folder.absoluteFilePath(file);
 
-        qDebug() << "Loading file:" << fullPath;
+        DicomSliceInfo info =readSliceInfo(fullPath);
+
+        slices.append(info);
+    }
+    // =========================================================
+    // SORT SLICES
+    // =========================================================
+
+    std::sort(
+        slices.begin(),
+        slices.end(),
+        [](const DicomSliceInfo& a,
+           const DicomSliceInfo& b) {
+
+            if (a.instanceNumber != 0 &&
+                b.instanceNumber != 0) {
+
+                return a.instanceNumber <
+                       b.instanceNumber;
+            }
+
+            return a.sliceLocation <
+                   b.sliceLocation;
+        }
+        );
+
+    qDebug() << "Slices sorted";
+
+
+    // =========================================================
+    // LOAD SORTED DICOM FILES
+    // =========================================================
+
+    for (const DicomSliceInfo& slice : slices) {
+
+        QString fullPath =slice.filePath;
+
+        qDebug()
+            << "Loading file:"
+            << fullPath;
 
         DcmFileFormat fileFormat;
 
-        // Load file with flags to handle compressed data
-        OFCondition status =
-            fileFormat.loadFile(fullPath.toStdString().c_str());
+        OFCondition status =fileFormat.loadFile(fullPath.toStdString().c_str());
 
         if (status.bad()) {
-            qWarning() << "Failed to load DICOM file:" << file << status.text();
+
+            qWarning()
+            << "Failed to load:"
+            << fullPath
+            << status.text();
+
             continue;
         }
 
         DcmDataset* dataset = fileFormat.getDataset();
+
+
+        // =====================================================
+        // METADATA
+        // =====================================================
 
         m_patientName =
             readTag(dataset, DCM_PatientName);
@@ -219,33 +330,84 @@ bool DicomLoader::loadFolder(const QString &folderPath)
         m_pixelSpacing =
             readTag(dataset, DCM_PixelSpacing);
 
+
+
+        // =====================================================
+        // CREATE DICOM IMAGE
+        // =====================================================
+
         // Create DicomImage with flags to handle compressed data and missing PhotometricInterpretation
         unsigned long flags = 0;
-        DicomImage image(fullPath.toStdString().c_str(), flags);
+
+        DicomImage image(fullPath.toStdString().c_str(),flags);
 
         if (image.getStatus() != EIS_Normal) {
-            qWarning() << "Failed to create DicomImage for:" << file << "Status:" << image.getStatus();
+
+            qWarning()
+            << "Failed to create DicomImage:"
+            << fullPath;
+
             continue;
         }
 
-        const QImage dicomImage = renderDicomToQImage(image,m_windowWidth,m_windowLevel);
+        // =====================================================
+        // CONVERT TO QIMAGE
+        // =====================================================
+
+        const QImage dicomImage =renderDicomToQImage(
+                image,
+                m_windowWidth,
+                m_windowLevel
+                );
+
         if (dicomImage.isNull()) {
-            qWarning() << "Failed to decode pixels for:" << file;
+
+            qWarning()
+            << "Failed to render image:"
+            << fullPath;
+
             continue;
         }
+
+        // =====================================================
+        // IMAGE SIZE
+        // =====================================================
+
 
         if (m_imageWidth == 0 && m_imageHeight == 0) {
             m_imageWidth = dicomImage.width();
             m_imageHeight = dicomImage.height();
         }
 
+        // =====================================================
+        // STORE IMAGE
+        // =====================================================
+
         m_images.append(dicomImage);
+
         m_filePaths.append(fullPath);
-        qDebug() << "Successfully loaded DICOM file:" << file;
+
+        qDebug()
+            << "Successfully loaded:"
+            << fullPath
+            << "| Instance:"
+            << slice.instanceNumber
+            << "| Slice Location:"
+            << slice.sliceLocation;
     }
 
-    qDebug() << "Loaded" << m_images.size() << "DICOM images";
-    return !m_images.isEmpty();
+    qDebug()
+        << "Loaded"
+        << m_images.size()
+        << "sorted DICOM images";
+
+    if (m_images.isEmpty())
+        return false;
+
+    m_image =
+        m_images[m_currentIndex];
+
+    return true;
 }
 
 bool DicomLoader::loadFile(const QString &filePath)
