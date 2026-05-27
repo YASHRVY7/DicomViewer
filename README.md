@@ -1,7 +1,7 @@
 <div align="center">
 
 <!-- Animated Header Banner -->
-<img src="https://capsule-render.vercel.app/api?type=waving&color=0:0d1117,50:0a3d62,100:1a7fd4&height=220&section=header&text=DICOM%20Viewer&fontSize=65&fontColor=ffffff&fontAlignY=38&desc=Professional%20Medical%20Imaging%20Desktop%20Application&descAlignY=58&descSize=18&animation=fadeIn" width="100%"/>
+<img src="https://capsule-render.vercel.app/api?type=waving&color=0:0d1117,50:0a3d62,100:1a7fd4&height=220&section=header&text=DICOM%20Viewer&fontSize=65&fontColor=ffffff&fontAlignY=38&desc=Medical%20Imaging%20Desktop%20Application&descAlignY=58&descSize=18&animation=fadeIn" width="100%"/>
 
 <br/>
 
@@ -486,12 +486,8 @@ No DICOM files on hand? Start with these free public sources:
 - [ ] 🧩 Multiplanar Reconstruction (MPR) — Axial / Sagittal / Coronal
 - [ ] ▶️ Cine loop / auto-play mode
 - [ ] 📏 Measurement tools — length, angle, area
-- [ ] 🖊️ Annotation & markup layer
-- [ ] 📦 Multiple series support in one viewer
-- [ ] 🌐 PACS networking — C-FIND / C-MOVE / C-STORE
 - [ ] 📤 Export to PNG / JPEG / PDF
-- [ ] ⚡ Performance optimization — lazy loading for large studies
-- [ ] 🔬 DICOM structured reports support
+
 
 <br/>
 
