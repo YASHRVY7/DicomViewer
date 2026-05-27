@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import QtQuick.Dialogs
+import DicomViewer.Backend 1.0
 
 Window {
 
@@ -15,7 +16,7 @@ Window {
 
     property string dicomSource:
         "image://dicom/current?v=" +
-        dicomController.imageVersion
+        DicomController.imageVersion
 
     property real zoomLevel: 1.0
     property real minZoom: 0.5
@@ -195,8 +196,8 @@ Window {
 
                         onClicked: {
 
-                            dicomController.setWindowWidth(1500)
-                            dicomController.setWindowLevel(300)
+                            DicomController.setWindowWidth(1500)
+                            DicomController.setWindowLevel(300)
                         }
                     }
 
@@ -229,8 +230,8 @@ Window {
 
                         onClicked: {
 
-                            dicomController.setWindowWidth(1500)
-                            dicomController.setWindowLevel(-600)
+                            DicomController.setWindowWidth(1500)
+                            DicomController.setWindowLevel(-600)
                         }
                     }
 
@@ -263,8 +264,8 @@ Window {
 
                         onClicked: {
 
-                            dicomController.setWindowWidth(80)
-                            dicomController.setWindowLevel(40)
+                            DicomController.setWindowWidth(80)
+                            DicomController.setWindowLevel(40)
                         }
                     }
 
@@ -301,9 +302,9 @@ Window {
                             Label {
 
                                 text:
-                                    dicomController.currentSlice +
+                                    DicomController.currentSlice +
                                     " / " +
-                                    dicomController.totalSlices
+                                    DicomController.totalSlices
 
                                 color: "#f1f5f9"
 
@@ -399,7 +400,7 @@ Window {
                                 Label {
 
                                     text:
-                                        dicomController.patientName
+                                        DicomController.patientName
 
                                     color: "#f1f5f9"
 
@@ -424,7 +425,7 @@ Window {
                                 Label {
 
                                     text:
-                                        dicomController.studyDate
+                                        DicomController.studyDate
 
                                     color: "#f1f5f9"
 
@@ -444,7 +445,7 @@ Window {
                                 }
 
                                 Label {
-                                    text: dicomController.patientId
+                                    text: DicomController.patientId
                                     color: "#f1f5f9"
                                     font.pixelSize: 15
                                     font.bold: true
@@ -462,7 +463,7 @@ Window {
                                 }
 
                                 Label {
-                                    text: dicomController.modality
+                                    text: DicomController.modality
                                     color: "#f1f5f9"
                                     font.pixelSize: 15
                                     font.bold: true
@@ -480,7 +481,7 @@ Window {
                                 }
 
                                 Label {
-                                    text: dicomController.studyDescription
+                                    text: DicomController.studyDescription
                                     color: "#f1f5f9"
                                     font.pixelSize: 14
                                     font.bold: true
@@ -500,7 +501,7 @@ Window {
                                 }
 
                                 Label {
-                                    text: dicomController.seriesDescription
+                                    text: DicomController.seriesDescription
                                     color: "#f1f5f9"
                                     font.pixelSize: 14
                                     font.bold: true
@@ -520,7 +521,7 @@ Window {
                                 }
 
                                 Label {
-                                    text: dicomController.institutionName
+                                    text: DicomController.institutionName
                                     color: "#f1f5f9"
                                     font.pixelSize: 14
                                     font.bold: true
@@ -540,7 +541,7 @@ Window {
                                 }
 
                                 Label {
-                                    text: dicomController.sliceThickness
+                                    text: DicomController.sliceThickness
                                     color: "#f1f5f9"
                                     font.pixelSize: 15
                                     font.bold: true
@@ -558,7 +559,7 @@ Window {
                                 }
 
                                 Label {
-                                    text: dicomController.pixelSpacing
+                                    text: DicomController.pixelSpacing
                                     color: "#f1f5f9"
                                     font.pixelSize: 15
                                     font.bold: true
@@ -577,9 +578,9 @@ Window {
 
                                 Label {
                                     text:
-                                        dicomController.imageWidth +
+                                        DicomController.imageWidth +
                                         " x " +
-                                        dicomController.imageHeight
+                                        DicomController.imageHeight
 
                                     color: "#f1f5f9"
                                     font.pixelSize: 15
@@ -631,7 +632,7 @@ Window {
 
                                     text:
                                         Math.round(
-                                            dicomController.windowWidth
+                                            DicomController.windowWidth
                                             )
 
                                     color: "#f1f5f9"
@@ -658,7 +659,7 @@ Window {
 
                                     text:
                                         Math.round(
-                                            dicomController.windowLevel
+                                            DicomController.windowLevel
                                             )
 
                                     color: "#f1f5f9"
@@ -709,14 +710,14 @@ Window {
                                 to: 3000
 
                                 value:
-                                    dicomController.windowWidth
+                                    DicomController.windowWidth
 
                                 enabled:
-                                    dicomController.imageLoaded
+                                    DicomController.imageLoaded
 
                                 onMoved: {
 
-                                    dicomController
+                                    DicomController
                                     .setWindowWidth(value)
                                 }
                             }
@@ -738,14 +739,14 @@ Window {
                                 to: 1000
 
                                 value:
-                                    dicomController.windowLevel
+                                    DicomController.windowLevel
 
                                 enabled:
-                                    dicomController.imageLoaded
+                                    DicomController.imageLoaded
 
                                 onMoved: {
 
-                                    dicomController
+                                    DicomController
                                     .setWindowLevel(value)
                                 }
                             }
@@ -793,7 +794,7 @@ Window {
                                     radius: 5
 
                                     color:
-                                        dicomController.imageLoaded
+                                        DicomController.imageLoaded
                                         ? "#22c55e"
                                         : "#ef4444"
                                 }
@@ -801,7 +802,7 @@ Window {
                                 Label {
 
                                     text:
-                                        dicomController.imageLoaded
+                                        DicomController.imageLoaded
                                         ? "Study Loaded"
                                         : "Waiting For Study"
 
@@ -860,9 +861,9 @@ Window {
                             else {
 
                                 if (event.angleDelta.y > 0)
-                                    dicomController.previousSlice()
+                                    DicomController.previousSlice()
                                 else
-                                    dicomController.nextSlice()
+                                    DicomController.nextSlice()
                             }
                         }
                     }
@@ -913,7 +914,7 @@ Window {
 
                                 text:
                                     "Slice: " +
-                                    dicomController.currentSlice
+                                    DicomController.currentSlice
 
                                 color: "#dbe4ee"
 
@@ -925,9 +926,9 @@ Window {
 
                                 text:
                                     "WW/WL: " +
-                                    Math.round(dicomController.windowWidth) +
+                                    Math.round(DicomController.windowWidth) +
                                     " / " +
-                                    Math.round(dicomController.windowLevel)
+                                    Math.round(DicomController.windowLevel)
 
                                 color: "#dbe4ee"
 
@@ -963,7 +964,7 @@ Window {
                             anchors.centerIn: parent
 
                             source:
-                                dicomController.imageLoaded
+                                DicomController.imageLoaded
                                 ? dicomSource
                                 : ""
 
@@ -999,7 +1000,7 @@ Window {
                         spacing: 10
 
                         visible:
-                            !dicomController.imageLoaded
+                            !DicomController.imageLoaded
 
                         Label {
 
@@ -1089,7 +1090,7 @@ Window {
                     Label {
 
                         text:
-                            dicomController.imageLoaded
+                            DicomController.imageLoaded
                             ? "Study Ready"
                             : "Ready"
 
@@ -1113,7 +1114,7 @@ Window {
                     selectedFolder.toString()
                     .replace("file:///", "")
 
-            dicomController.loadFolder(path)
+            DicomController.loadFolder(path)
         }
     }
 }

@@ -2,6 +2,7 @@
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
 #include <QQuickImageProvider>
+#include <QtQml>
 #include "backend/dicomcontroller.h"
 
 int main(int argc, char *argv[])
@@ -16,7 +17,14 @@ int main(int argc, char *argv[])
         "dicom",
         controller.provider()
         );
-    engine.rootContext()->setContextProperty("dicomController", &controller);
+
+    qmlRegisterSingletonInstance(
+        "DicomViewer.Backend",
+        1,
+        0,
+        "DicomController",
+        &controller
+        );
 
     engine.loadFromModule("DicomViewer", "Main");
 
