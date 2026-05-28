@@ -53,6 +53,10 @@
 ╚═══════════════════════════════════════════════════════════════╝
 ```
 
+
+https://github.com/user-attachments/assets/bd33142d-ce94-4ace-94ad-462852db0cbf
+
+
 </div>
 
 > 💡 **Learning Focus:** Qt/QML architecture · DICOM protocols · Medical slice ordering · Image rendering pipelines · Windowing algorithms · Desktop UI development
